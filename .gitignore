@@ -10,3 +10,12 @@ npm-debug.log
 /android/build
 /ios/**/*xcuserdata*
 /ios/**/*xcshareddata*
+.classpath
+.project
+.settings/
+/build.gradle
+/local.properties
+/settings.gradle
+bin/
+build/
+/gradle*

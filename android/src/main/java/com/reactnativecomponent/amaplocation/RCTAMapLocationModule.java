@@ -13,6 +13,7 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 
+import com.amap.api.location.DPoint;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -20,6 +21,7 @@ import com.facebook.react.bridge.ReactMethod;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.amap.api.location.AMapLocation;
@@ -28,9 +30,16 @@ import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationClientOption.AMapLocationMode;
 import com.amap.api.location.AMapLocationClientOption.AMapLocationProtocol;
 import com.amap.api.location.AMapLocationListener;
+
+import com.amap.api.fence.GeoFenceClient;
+import com.amap.api.fence.GeoFence;
+import com.amap.api.fence.GeoFenceListener;
+
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+
+import static com.amap.api.fence.GeoFenceClient.*;
 
 
 public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
@@ -216,6 +225,28 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
         }
     }
 
+    public void geoFence(final ReadableMap options) {
+      GeoFenceClient mGeoFenceClient = new GeoFenceClient(this.reactContext.getApplicationContext());
+      mGeoFenceClient.setActivateAction(GEOFENCE_IN|GEOFENCE_STAYED);
+      ReadableMap coordinateMap = options.getMap("coordinate");
+      mGeoFenceClient.addGeoFence(new DPoint(coordinateMap.getDouble("latitude"), coordinateMap.getDouble("longitude")), options.getFloat("radius"), options.getString("customId"));
+      mGeoFenceClient.setGeoFenceListener(new GeoFenceListener() {
+
+          @Override
+          public void onGeoFenceCreateFinished(List<GeoFence> geoFenceList,
+                  int errorCode, String str) {
+              if(errorCode == GeoFence.ADDGEOFENCE_SUCCESS){//判断围栏是否创建成功
+
+                  //geoFenceList就是已经添加的围栏列表，可据此查看创建的围栏
+              } else {
+                  //geoFenceList就是已经添加的围栏列表
+
+              }
+          }
+      });
+
+    }
+
     private WritableMap setResultMap(AMapLocation location) {
         WritableMap resultMap = Arguments.createMap();
         if (null != location) {
@@ -313,4 +344,3 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
     }
 
 }
-
