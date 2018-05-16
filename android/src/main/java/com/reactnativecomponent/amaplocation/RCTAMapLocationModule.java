@@ -229,7 +229,7 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
       GeoFenceClient mGeoFenceClient = new GeoFenceClient(this.reactContext.getApplicationContext());
       mGeoFenceClient.setActivateAction(GEOFENCE_IN|GEOFENCE_STAYED);
       ReadableMap coordinateMap = options.getMap("coordinate");
-      mGeoFenceClient.addGeoFence(new DPoint(coordinateMap.getDouble("latitude"), coordinateMap.getDouble("longitude")), options.getFloat("radius"), options.getString("customId"));
+      mGeoFenceClient.addGeoFence(new DPoint(coordinateMap.getDouble("latitude"), coordinateMap.getDouble("longitude")), (float)options.getDouble("radius"), options.getString("customId"));
       mGeoFenceClient.setGeoFenceListener(new GeoFenceListener() {
 
           @Override
