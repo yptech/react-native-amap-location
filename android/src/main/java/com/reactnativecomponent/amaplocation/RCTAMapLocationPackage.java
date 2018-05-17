@@ -19,8 +19,7 @@ public class RCTAMapLocationPackage implements ReactPackage {
                 new RCTAMapLocationModule(reactContext)
         );
     }
-
-    @Override
+    
     public List<Class<? extends JavaScriptModule>> createJSModules() {
         return Collections.emptyList();
     }
