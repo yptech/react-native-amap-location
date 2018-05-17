@@ -26,7 +26,6 @@ import com.amap.api.location.AMapLocationClientOption.AMapLocationProtocol;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.location.DPoint;
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -261,6 +260,8 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
         //创建并设置PendingIntent
         mGeoFenceClient.createPendingIntent(GEOFENCE_BROADCAST_ACTION);
         BroadcastReceiver mGeoFenceReceiver = new BroadcastReceiver() {
+            private boolean resolved;
+
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(GEOFENCE_BROADCAST_ACTION)) {
@@ -271,7 +272,10 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
                     String cId = bundle.getString(GeoFence.BUNDLE_KEY_CUSTOMID);
                     //获取当前有触发的围栏对象：
                     GeoFence fence = bundle.getParcelable(GeoFence.BUNDLE_KEY_FENCE);
-                    promise.resolve(null);
+                    if (!resolved) {
+                        promise.resolve(null);
+                        resolved = true;
+                    }
                     mGeoFenceClient.removeGeoFence(fence);
                 }
             }
