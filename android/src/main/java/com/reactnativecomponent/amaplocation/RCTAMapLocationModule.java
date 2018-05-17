@@ -4,42 +4,43 @@ package com.reactnativecomponent.amaplocation;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.BroadcastReceiver;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.net.ConnectivityManager;
 
-import com.amap.api.location.DPoint;
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.amap.api.fence.GeoFence;
+import com.amap.api.fence.GeoFenceClient;
+import com.amap.api.fence.GeoFenceListener;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationClientOption.AMapLocationMode;
 import com.amap.api.location.AMapLocationClientOption.AMapLocationProtocol;
 import com.amap.api.location.AMapLocationListener;
-
-import com.amap.api.fence.GeoFenceClient;
-import com.amap.api.fence.GeoFence;
-import com.amap.api.fence.GeoFenceListener;
-
+import com.amap.api.location.DPoint;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import static com.amap.api.fence.GeoFenceClient.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.amap.api.fence.GeoFenceClient.GEOFENCE_IN;
+import static com.amap.api.fence.GeoFenceClient.GEOFENCE_STAYED;
 
 
 public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
@@ -48,6 +49,8 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
 
     private AMapLocationClient locationClient = null;
     private AMapLocationClientOption locationOption = null;
+
+    private GeoFenceClient mGeoFenceClient = null;
 
     private Intent alarmIntent = null;
     private PendingIntent alarmPi = null;
@@ -64,6 +67,9 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
 
     private int alarmInterval = 5;
 
+    //定义接收广播的action字符串
+    private static final String GEOFENCE_BROADCAST_ACTION = "com.location.apis.geofence.broadcast";
+
     public RCTAMapLocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
@@ -79,11 +85,11 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
         if(locationClient != null) {
             return;
         }
-        currentActivity = reactContext.getCurrentActivity();
+        currentActivity = this.getCurrentActivity();
         locationOption = new AMapLocationClientOption();
         locationOption.setOnceLocation(true);   //调整为单次定位, 默认是多次
         //初始化client
-        locationClient = new AMapLocationClient(getCurrentActivity());
+        locationClient = new AMapLocationClient(currentActivity);
         if(options != null) {
             setOptions(options);
         }
@@ -225,15 +231,21 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
         }
     }
 
-    public void geoFence(final ReadableMap options) {
-      GeoFenceClient mGeoFenceClient = new GeoFenceClient(this.reactContext.getApplicationContext());
-      mGeoFenceClient.setActivateAction(GEOFENCE_IN|GEOFENCE_STAYED);
-      ReadableMap coordinateMap = options.getMap("coordinate");
-      mGeoFenceClient.addGeoFence(new DPoint(coordinateMap.getDouble("latitude"), coordinateMap.getDouble("longitude")), (float)options.getDouble("radius"), options.getString("customId"));
-      mGeoFenceClient.setGeoFenceListener(new GeoFenceListener() {
+    @ReactMethod
+    public void geoFence(final ReadableMap options, final Callback callback) {
+        if (mGeoFenceClient == null) {
+            mGeoFenceClient = new GeoFenceClient(this.reactContext.getApplicationContext());
+        }
+        mGeoFenceClient.setActivateAction(GEOFENCE_IN|GEOFENCE_STAYED);
+        ReadableMap coordinateMap = options.getMap("coordinate");
+        final String customId = options.getString("customId");
 
-          @Override
-          public void onGeoFenceCreateFinished(List<GeoFence> geoFenceList,
+        mGeoFenceClient.addGeoFence(new DPoint(coordinateMap.getDouble("latitude"), coordinateMap.getDouble("longitude")), (float)options.getDouble("radius"), customId);
+
+        mGeoFenceClient.setGeoFenceListener(new GeoFenceListener() {
+
+            @Override
+            public void onGeoFenceCreateFinished(List<GeoFence> geoFenceList,
                   int errorCode, String str) {
               if(errorCode == GeoFence.ADDGEOFENCE_SUCCESS){//判断围栏是否创建成功
 
@@ -242,8 +254,30 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
                   //geoFenceList就是已经添加的围栏列表
 
               }
-          }
-      });
+            }
+        });
+        //创建并设置PendingIntent
+        mGeoFenceClient.createPendingIntent(GEOFENCE_BROADCAST_ACTION);
+        BroadcastReceiver mGeoFenceReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(GEOFENCE_BROADCAST_ACTION)) {
+                    Bundle bundle = intent.getExtras();
+                    //获取围栏行为：
+                    int status = bundle.getInt(GeoFence.BUNDLE_KEY_FENCESTATUS);
+                    //获取自定义的围栏标识：
+                    String cId = bundle.getString(GeoFence.BUNDLE_KEY_CUSTOMID);
+                    callback.invoke();
+                    //获取当前有触发的围栏对象：
+                    GeoFence fence = bundle.getParcelable(GeoFence.BUNDLE_KEY_FENCE);
+                    mGeoFenceClient.removeGeoFence(fence);
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        filter.addAction(GEOFENCE_BROADCAST_ACTION);
+        currentActivity.registerReceiver(mGeoFenceReceiver, filter);
 
     }
 

@@ -15,6 +15,8 @@
 
 @property (nonatomic, copy) AMapLocatingCompletionBlock completionBlock;
 
+@property (nonatomic, strong) AMapGeoFenceManager *geoFenceManager;
+
 @end
 
 @implementation RCTAMapLocation
@@ -136,6 +138,13 @@ RCT_EXPORT_METHOD(stopUpdatingLocation)
     //停止连续定位
     [self.locationManager stopUpdatingLocation];
 
+}
+
+RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(GeoFenceCallback)callback)
+{
+    if (self.geoFenceManager == null) {
+        self.geoFenceManager = [[AMapGeoFenceManager alloc] init];
+    }
 }
 
 - (void)dealloc
