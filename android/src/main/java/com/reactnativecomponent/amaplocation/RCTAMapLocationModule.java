@@ -73,7 +73,7 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
     public RCTAMapLocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
-        currentActivity = this.getCurrentActivity();
+
     }
 
     @Override
@@ -86,6 +86,7 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
         if(locationClient != null) {
             return;
         }
+        currentActivity = this.getCurrentActivity();
         locationOption = new AMapLocationClientOption();
         locationOption.setOnceLocation(true);   //调整为单次定位, 默认是多次
         //初始化client
@@ -236,6 +237,7 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
         if (mGeoFenceClient == null) {
             mGeoFenceClient = new GeoFenceClient(this.reactContext.getApplicationContext());
         }
+        currentActivity = this.getCurrentActivity();
         mGeoFenceClient.setActivateAction(GEOFENCE_IN|GEOFENCE_STAYED);
         ReadableMap coordinateMap = options.getMap("coordinate");
         final String customId = options.getString("customId");
