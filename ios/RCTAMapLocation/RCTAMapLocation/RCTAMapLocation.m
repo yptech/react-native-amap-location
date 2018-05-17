@@ -17,6 +17,9 @@
 
 @property (nonatomic, strong) AMapGeoFenceManager *geoFenceManager;
 
+static RCTPromiseResolveBlock _resolve;
+static RCTPromiseRejectBlock _reject;
+
 @end
 
 @implementation RCTAMapLocation
@@ -140,7 +143,7 @@ RCT_EXPORT_METHOD(stopUpdatingLocation)
 
 }
 
-RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback)
+RCT_REMAP_METHOD(geofence, options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     if (self.geoFenceManager == nil) {
         self.geoFenceManager = [[AMapGeoFenceManager alloc] init];
@@ -154,6 +157,9 @@ RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(RCTResponseSenderBl
     coordinate.latitude = [[coor objectForKey:@"latitude"] doubleValue];
     coordinate.longitude = [[coor objectForKey:@"longitude"] doubleValue];
     [self.geoFenceManager addCircleRegionForMonitoringWithCenter:coordinate radius:[[options objectForKey:@"radius"] doubleValue] customID:[[options objectForKey:@"customID"] stringValue]];
+    _resolve = resolve;
+    _reject = reject;
+    
 }
 
 - (void)dealloc
@@ -254,8 +260,10 @@ RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(RCTResponseSenderBl
 - (void)amapGeoFenceManager:(AMapGeoFenceManager *)manager didGeoFencesStatusChangedForRegion:(AMapGeoFenceRegion *)region customID:(NSString *)customID error:(NSError *)error {
     if (error) {
         NSLog(@"status changed error %@",error);
+        _reject(error);
     }else{
         //TODO 这里处理围栏触发的事件
+        _resolve(region);
         [manager removeTheGeoFenceRegion:region];
     }
 }
