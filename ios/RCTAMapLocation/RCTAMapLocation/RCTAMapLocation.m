@@ -17,10 +17,10 @@
 
 @property (nonatomic, strong) AMapGeoFenceManager *geoFenceManager;
 
+@end
+
 static RCTPromiseResolveBlock _resolve;
 static RCTPromiseRejectBlock _reject;
-
-@end
 
 @implementation RCTAMapLocation
 
@@ -260,7 +260,7 @@ RCT_REMAP_METHOD(geofence, options:(NSDictionary *)options resolver:(RCTPromiseR
 - (void)amapGeoFenceManager:(AMapGeoFenceManager *)manager didGeoFencesStatusChangedForRegion:(AMapGeoFenceRegion *)region customID:(NSString *)customID error:(NSError *)error {
     if (error) {
         NSLog(@"status changed error %@",error);
-        _reject(error);
+        _reject(customID, error.description, error);
     }else{
         //TODO 这里处理围栏触发的事件
         _resolve(region);
