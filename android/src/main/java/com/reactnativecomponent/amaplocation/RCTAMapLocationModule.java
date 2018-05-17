@@ -248,7 +248,6 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
             public void onGeoFenceCreateFinished(List<GeoFence> geoFenceList,
                   int errorCode, String str) {
               if(errorCode == GeoFence.ADDGEOFENCE_SUCCESS){//判断围栏是否创建成功
-
                   //geoFenceList就是已经添加的围栏列表，可据此查看创建的围栏
               } else {
                   //geoFenceList就是已经添加的围栏列表

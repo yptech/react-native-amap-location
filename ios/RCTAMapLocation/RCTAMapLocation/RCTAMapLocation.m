@@ -9,7 +9,7 @@
 #import <AMapFoundationKit/AMapFoundationKit.h>
 #import <AMapLocationKit/AMapLocationKit.h>
 
-@interface RCTAMapLocation() <AMapLocationManagerDelegate>
+@interface RCTAMapLocation() <AMapLocationManagerDelegate, AMapGeoFenceManagerDelegate>
 
 @property (nonatomic, strong) AMapLocationManager *locationManager;
 
@@ -144,7 +144,13 @@ RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(GeoFenceCallback)ca
 {
     if (self.geoFenceManager == null) {
         self.geoFenceManager = [[AMapGeoFenceManager alloc] init];
+        self.geoFenceManager.delegate = self;
+        self.geoFenceManager.activeAction = AMapGeoFenceActiveActionInside;
+        self.geoFenceManager.allowsBackgroundLocationUpdates = YES;  //允许后台定位
     }
+    
+    
+//    [self.geoFenceManager addCircleRegionForMonitoringWithCenter:coordinate radius:[[options objectForKey:@"radius"] intVal] customID:[[options objectForKey:@"customID"] stringVal]];
 }
 
 - (void)dealloc
@@ -240,6 +246,15 @@ RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(GeoFenceCallback)ca
     [self.bridge.eventDispatcher sendAppEventWithName:@"amap.location.onLocationResult"
                                                  body:resultDic];
 
+}
+
+- (void)amapGeoFenceManager:(AMapGeoFenceManager *)manager didGeoFencesStatusChangedForRegion:(AMapGeoFenceRegion *)region customID:(NSString *)customID error:(NSError *)error {
+    if (error) {
+        NSLog(@"status changed error %@",error);
+    }else{
+        //TODO 这里处理围栏触发的事件
+        [manager removeTheGeoFenceRegion:region];
+    }
 }
 
 
