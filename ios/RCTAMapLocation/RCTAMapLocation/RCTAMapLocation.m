@@ -142,15 +142,18 @@ RCT_EXPORT_METHOD(stopUpdatingLocation)
 
 RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback)
 {
-    if (self.geoFenceManager == null) {
+    if (self.geoFenceManager == nil) {
         self.geoFenceManager = [[AMapGeoFenceManager alloc] init];
         self.geoFenceManager.delegate = self;
         self.geoFenceManager.activeAction = AMapGeoFenceActiveActionInside;
         self.geoFenceManager.allowsBackgroundLocationUpdates = YES;  //允许后台定位
     }
     
-    NSDictionary* coordinate = [options objectForKey:@"coordinate"];
-    [self.geoFenceManager addCircleRegionForMonitoringWithCenter:coordinate radius:[[options objectForKey:@"radius"] intVal] customID:[[options objectForKey:@"customID"] stringVal]];
+    NSDictionary* coor = [options objectForKey:@"coordinate"];
+    CLLocationCoordinate2D coordinate;
+    coordinate.latitude = [[coor objectForKey:@"latitude"] doubleValue];
+    coordinate.longitude = [[coor objectForKey:@"longitude"] doubleValue];
+    [self.geoFenceManager addCircleRegionForMonitoringWithCenter:coordinate radius:[[options objectForKey:@"radius"] doubleValue] customID:[[options objectForKey:@"customID"] stringValue]];
 }
 
 - (void)dealloc
