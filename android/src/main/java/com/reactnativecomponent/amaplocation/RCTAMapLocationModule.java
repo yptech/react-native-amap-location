@@ -27,6 +27,7 @@ import com.amap.api.location.AMapLocationListener;
 import com.amap.api.location.DPoint;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -233,7 +234,7 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void geoFence(final ReadableMap options, final Callback callback) {
+    public void geoFence(final ReadableMap options, final Promise promise) {
         if (mGeoFenceClient == null) {
             mGeoFenceClient = new GeoFenceClient(this.reactContext.getApplicationContext());
         }
@@ -253,7 +254,7 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
                   //geoFenceList就是已经添加的围栏列表，可据此查看创建的围栏
               } else {
                   //geoFenceList就是已经添加的围栏列表
-
+                  promise.reject("创建围栏失败", str);
               }
             }
         });
@@ -270,7 +271,7 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
                     String cId = bundle.getString(GeoFence.BUNDLE_KEY_CUSTOMID);
                     //获取当前有触发的围栏对象：
                     GeoFence fence = bundle.getParcelable(GeoFence.BUNDLE_KEY_FENCE);
-                    callback.invoke(fence);
+                    promise.resolve(null);
                     mGeoFenceClient.removeGeoFence(fence);
                 }
             }
