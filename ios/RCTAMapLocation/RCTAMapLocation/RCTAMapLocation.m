@@ -140,7 +140,7 @@ RCT_EXPORT_METHOD(stopUpdatingLocation)
 
 }
 
-RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(GeoFenceCallback)callback)
+RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(RCTResponseSenderBlock)callback)
 {
     if (self.geoFenceManager == null) {
         self.geoFenceManager = [[AMapGeoFenceManager alloc] init];
@@ -149,8 +149,8 @@ RCT_EXPORT_METHOD(geofence:(NSDictionary *)options callback:(GeoFenceCallback)ca
         self.geoFenceManager.allowsBackgroundLocationUpdates = YES;  //允许后台定位
     }
     
-    
-//    [self.geoFenceManager addCircleRegionForMonitoringWithCenter:coordinate radius:[[options objectForKey:@"radius"] intVal] customID:[[options objectForKey:@"customID"] stringVal]];
+    NSDictionary* coordinate = [options objectForKey:@"coordinate"];
+    [self.geoFenceManager addCircleRegionForMonitoringWithCenter:coordinate radius:[[options objectForKey:@"radius"] intVal] customID:[[options objectForKey:@"customID"] stringVal]];
 }
 
 - (void)dealloc
