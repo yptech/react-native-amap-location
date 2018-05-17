@@ -268,9 +268,9 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
                     int status = bundle.getInt(GeoFence.BUNDLE_KEY_FENCESTATUS);
                     //获取自定义的围栏标识：
                     String cId = bundle.getString(GeoFence.BUNDLE_KEY_CUSTOMID);
-                    callback.invoke(null);
                     //获取当前有触发的围栏对象：
                     GeoFence fence = bundle.getParcelable(GeoFence.BUNDLE_KEY_FENCE);
+                    callback.invoke(fence);
                     mGeoFenceClient.removeGeoFence(fence);
                 }
             }
