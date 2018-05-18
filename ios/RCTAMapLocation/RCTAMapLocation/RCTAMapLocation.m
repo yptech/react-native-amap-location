@@ -143,7 +143,7 @@ RCT_EXPORT_METHOD(stopUpdatingLocation)
 
 }
 
-RCT_REMAP_METHOD(geofence, options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+RCT_REMAP_METHOD(geoFence, options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     if (self.geoFenceManager == nil) {
         self.geoFenceManager = [[AMapGeoFenceManager alloc] init];
