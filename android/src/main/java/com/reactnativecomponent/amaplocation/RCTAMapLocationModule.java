@@ -273,10 +273,10 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
                     //获取当前有触发的围栏对象：
                     GeoFence fence = bundle.getParcelable(GeoFence.BUNDLE_KEY_FENCE);
                     if (!resolved) {
-                        promise.resolve(null);
+                        promise.resolve(fence);
                         resolved = true;
                     }
-                    mGeoFenceClient.removeGeoFence(fence);
+                    mGeoFenceClient.removeGeoFence();
                 }
             }
         };
@@ -285,6 +285,13 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
         filter.addAction(GEOFENCE_BROADCAST_ACTION);
         currentActivity.registerReceiver(mGeoFenceReceiver, filter);
 
+    }
+
+    @ReactMethod
+    public void cancelGeoFence() {
+        if (mGeoFenceClient != null) {
+            mGeoFenceClient.removeGeoFence();
+        }
     }
 
     private WritableMap setResultMap(AMapLocation location) {
