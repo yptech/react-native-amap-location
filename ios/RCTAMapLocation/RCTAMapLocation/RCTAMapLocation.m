@@ -160,6 +160,14 @@ RCT_REMAP_METHOD(geoFence, options:(NSDictionary *)options resolver:(RCTPromiseR
     
 }
 
+RCT_EXPORT_METHOD(cancelGeoFence)
+{
+    if (self.geoFenceManager == nil) {
+        return;
+    }
+    [self.geoFenceManager removeAllGeoFenceRegions];
+}
+
 - (void)dealloc
 {
     [self cleanUp];
@@ -260,9 +268,13 @@ RCT_REMAP_METHOD(geoFence, options:(NSDictionary *)options resolver:(RCTPromiseR
         NSLog(@"status changed error %@",error);
         _reject(customID, error.description, error);
     }else{
-        //TODO 这里处理围栏触发的事件
-        _resolve(region);
-        [manager removeTheGeoFenceRegion:region];
+        NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+        [result setValue:@(region.fenceStatus) forKey:@"fenceStatus"];
+        [result setValue:region.identifier forKey:@"identifier"];
+        [result setValue:region.customID forKey:@"customID"];
+        
+        _resolve(result);
+        [manager removeAllGeoFenceRegions];
     }
 }
 
