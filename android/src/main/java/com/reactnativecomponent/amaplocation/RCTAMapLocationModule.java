@@ -273,7 +273,10 @@ public class RCTAMapLocationModule extends ReactContextBaseJavaModule {
                     //获取当前有触发的围栏对象：
                     GeoFence fence = bundle.getParcelable(GeoFence.BUNDLE_KEY_FENCE);
                     if (!resolved) {
-                        promise.resolve(fence);
+                        WritableMap result = Arguments.createMap();
+                        result.putString("customId", cId);
+                        result.putInt("fenceStatus", status);
+                        promise.resolve(result);
                         resolved = true;
                     }
                     mGeoFenceClient.removeGeoFence();
