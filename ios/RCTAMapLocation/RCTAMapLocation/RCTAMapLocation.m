@@ -153,9 +153,7 @@ RCT_REMAP_METHOD(geoFence, options:(NSDictionary *)options resolver:(RCTPromiseR
     }
     
     NSDictionary* coor = [options objectForKey:@"coordinate"];
-    CLLocationCoordinate2D coordinate;
-    coordinate.latitude = [[coor objectForKey:@"latitude"] doubleValue];
-    coordinate.longitude = [[coor objectForKey:@"longitude"] doubleValue];
+    CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([[coor objectForKey:@"latitude"] doubleValue], [[coor objectForKey:@"longitude"] doubleValue]);
     [self.geoFenceManager addCircleRegionForMonitoringWithCenter:coordinate radius:[[options objectForKey:@"radius"] doubleValue] customID:[[options objectForKey:@"customID"] stringValue]];
     _resolve = resolve;
     _reject = reject;
